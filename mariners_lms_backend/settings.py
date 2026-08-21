@@ -176,3 +176,15 @@ SIMPLE_JWT = {
 
     "UPDATE_LAST_LOGIN": True,
 }
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = BASE_DIR / "media"
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
