@@ -79,6 +79,7 @@ class ProfileView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    # GET PROFILE
     def get(self, request):
 
         serializer = ProfileSerializer(request.user)
@@ -88,4 +89,50 @@ class ProfileView(APIView):
                 "status": True,
                 "data": serializer.data,
             }
+        )
+
+    # UPDATE PROFILE
+    class ProfileView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    # GET PROFILE
+    def get(self, request):
+
+        serializer = ProfileSerializer(request.user)
+
+        return Response(
+            {
+                "status": True,
+                "data": serializer.data,
+            }
+        )
+
+    # UPDATE PROFILE
+    def patch(self, request):
+
+        serializer = ProfileSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(
+                {
+                    "status": True,
+                    "message": "Profile updated successfully",
+                    "data": serializer.data,
+                }
+            )
+
+        return Response(
+            {
+                "status": False,
+                "errors": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
         )
