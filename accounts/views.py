@@ -94,7 +94,7 @@ class ProfileView(APIView):
     # UPDATE PROFILE
     class ProfileView(APIView):
 
-    permission_classes = [IsAuthenticated]
+        permission_classes = [IsAuthenticated]
 
     # GET PROFILE
     def get(self, request):
