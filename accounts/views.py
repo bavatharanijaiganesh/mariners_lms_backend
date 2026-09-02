@@ -50,12 +50,19 @@ class LoginView(APIView):
                     "message": "Login Successful",
                     "access": data["access"],
                     "refresh": data["refresh"],
-                    "user": {
-                        "id": data["user"].id,
-                        "full_name": data["user"].full_name,
-                        "email": data["user"].email,
-                        "role": data["user"].role,
-                    },
+                   "user": {
+    "id": data["user"].id,
+    "full_name": data["user"].full_name,
+    "email": data["user"].email,
+    "phone_number": data["user"].phone_number,
+    "role": data["user"].role,
+    "cdc_number": data["user"].cdc_number,
+    "department": data["user"].department,
+    "rank": data["user"].rank,
+    "location": data["user"].location,
+    "emergency_contact": data["user"].emergency_contact,
+    "bio": data["user"].bio,
+},
                 }
             )
 

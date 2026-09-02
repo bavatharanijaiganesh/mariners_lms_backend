@@ -92,4 +92,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
             "role",
-        ]        
+            "cdc_number",
+            "department",
+            "rank",
+            "location",
+            "emergency_contact",
+            "bio",
+        ]       

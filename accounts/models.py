@@ -25,6 +25,39 @@ class User(AbstractUser):
         default="STUDENT",
     )
 
+    # =========================
+    # MARINER PROFILE DETAILS
+    # =========================
+
+    cdc_number = models.CharField(
+        max_length=50,
+        blank=True
+    )
+
+    department = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    rank = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    location = models.CharField(
+        max_length=150,
+        blank=True
+    )
+
+    emergency_contact = models.CharField(
+        max_length=20,
+        blank=True
+    )
+
+    bio = models.TextField(
+        blank=True
+    )
+
     USERNAME_FIELD = "email"
 
     REQUIRED_FIELDS = ["full_name"]
