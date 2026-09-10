@@ -19,9 +19,11 @@ class CreatePaymentIntent(APIView):
     def post(self, request):
 
         try:
-
             amount = float(request.data["amount"])
             enrollment_id = request.data.get("enrollment_id")
+
+            print("PAYMENT USER:", request.user.email)
+            print("PAYMENT ENROLLMENT ID:", enrollment_id)
 
             enrollment = Enrollment.objects.get(
                 id=enrollment_id,
@@ -29,18 +31,22 @@ class CreatePaymentIntent(APIView):
                 status="PENDING"
             )
 
+            print(
+                "ENROLLMENT FOUND:",
+                enrollment.id,
+                enrollment.student.email,
+                enrollment.course_id,
+                enrollment.status
+            )
+
             amount_in_cents = int(amount * 100)
 
             intent = stripe.PaymentIntent.create(
-
                 amount=amount_in_cents,
-
                 currency="usd",
-
                 automatic_payment_methods={
                     "enabled": True
                 },
-
                 metadata={
                     "enrollment_id": str(enrollment.id),
                     "student_id": str(request.user.id),
@@ -55,7 +61,9 @@ class CreatePaymentIntent(APIView):
 
             return Response(
                 {
-                    "error": "Pending enrollment not found."
+                    "error": "Pending enrollment not found.",
+                    "debug_user": request.user.email,
+                    "debug_enrollment_id": enrollment_id
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
@@ -68,8 +76,6 @@ class CreatePaymentIntent(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-
 class PaymentSuccessView(APIView):
 
     permission_classes = [IsAuthenticated]
