@@ -120,6 +120,5 @@ class ModuleSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "order",
-            "created_at",
             "lessons",
-        ]          
+        ]

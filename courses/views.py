@@ -2,7 +2,8 @@
 # from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from lms.models import Enrollment
+from rest_framework.exceptions import PermissionDenied
 from .models import Category, Course, Module,Lesson
 from .serializers import CategorySerializer, CourseSerializer, ModuleSerializer, LessonSerializer
 
