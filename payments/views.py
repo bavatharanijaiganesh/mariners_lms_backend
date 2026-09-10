@@ -1,12 +1,16 @@
 import stripe
+
 from django.conf import settings
-
-stripe.api_key = settings.STRIPE_SECRET_KEY
-
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
+
 from lms.models import Enrollment
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
 
 class CreatePaymentIntent(APIView):
 
@@ -14,31 +18,56 @@ class CreatePaymentIntent(APIView):
 
     def post(self, request):
 
-        amount = int(float(request.data["amount"]) * 100)
+        try:
 
-        intent = stripe.PaymentIntent.create(
+            amount = float(request.data["amount"])
+            enrollment_id = request.data.get("enrollment_id")
 
-            amount=amount,
+            enrollment = Enrollment.objects.get(
+                id=enrollment_id,
+                student=request.user,
+                status="PENDING"
+            )
 
-            currency="usd",
+            amount_in_cents = int(amount * 100)
 
-            automatic_payment_methods={
-                "enabled": True
-            }
+            intent = stripe.PaymentIntent.create(
 
-        )
+                amount=amount_in_cents,
 
-        return Response({
+                currency="usd",
 
-            "clientSecret": intent.client_secret
+                automatic_payment_methods={
+                    "enabled": True
+                },
 
-        })
+                metadata={
+                    "enrollment_id": str(enrollment.id),
+                    "student_id": str(request.user.id),
+                }
+            )
 
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+            return Response({
+                "clientSecret": intent.client_secret
+            })
 
-from lms.models import Enrollment
+        except Enrollment.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Pending enrollment not found."
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        except Exception as e:
+
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class PaymentSuccessView(APIView):
@@ -47,15 +76,77 @@ class PaymentSuccessView(APIView):
 
     def post(self, request, pk):
 
-        enrollment = Enrollment.objects.get(
-            id=pk,
-            student=request.user
-        )
+        try:
 
-        enrollment.status = "PAID"
+            payment_intent_id = request.data.get(
+                "payment_intent_id"
+            )
 
-        enrollment.save()
+            if not payment_intent_id:
 
-        return Response({
-            "message": "Payment Successful"
-        })
+                return Response(
+                    {
+                        "error": "Payment Intent ID is required."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get payment details from Stripe
+            intent = stripe.PaymentIntent.retrieve(
+                payment_intent_id
+            )
+
+            # Verify Stripe payment
+            if intent.status != "succeeded":
+
+                return Response(
+                    {
+                        "error": "Payment has not succeeded."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Verify enrollment belongs to logged-in student
+            enrollment = Enrollment.objects.get(
+                id=pk,
+                student=request.user,
+                status="PENDING"
+            )
+
+            # Verify this payment belongs to this enrollment
+            if intent.metadata.get("enrollment_id") != str(enrollment.id):
+
+                return Response(
+                    {
+                        "error": "Payment does not belong to this enrollment."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            enrollment.status = "PAID"
+
+            enrollment.save()
+
+            return Response({
+                "message": "Payment Successful",
+                "enrollment_id": enrollment.id,
+                "status": "PAID"
+            })
+
+        except Enrollment.DoesNotExist:
+
+            return Response(
+                {
+                    "error": "Enrollment not found."
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        except stripe.error.StripeError as e:
+
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )

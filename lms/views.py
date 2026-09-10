@@ -11,7 +11,7 @@ from .serializers import EnrollmentSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from courses.models import Lesson, Module
-from lms.models import Enrollment
+
 from courses.serializers import ModuleSerializer
 
 
