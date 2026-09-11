@@ -9,17 +9,6 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-# class CourseSerializer(serializers.ModelSerializer):
-
-#     category_name = serializers.CharField(
-#         source="category.name",
-#         read_only=True
-#     )
-
-#     class Meta:
-#         model = Course
-#         fields = "__all__"
-
 class CourseSerializer(serializers.ModelSerializer):
 
     category_name = serializers.CharField(
@@ -28,55 +17,8 @@ class CourseSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-
         model = Course
         fields = "__all__"
-
-        # fields = [
-        #     "id",
-        #     "course_name",
-        #     "category",
-        #     "category_name",
-        #     "fee",
-        #     "estimated_duration",
-        #     "description",
-        #     "thumbnail",
-        #     "pass_percentage",
-        #     "certificate_type",
-        #     "is_active",
-        #     "created_at",
-        #     "updated_at",
-        # ]
-# class ModuleSerializer(serializers.ModelSerializer):
-
-#     course_name = serializers.CharField(
-#         source="course.course_name",
-#         read_only=True
-#     )
-
-#     class Meta:
-
-#         model = Module
-
-#         fields = "__all__"
-
-
-# class ModuleSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = Module
-#         fields = "__all__"
-
-# class LessonSerializer(serializers.ModelSerializer):
-
-#     module_title = serializers.CharField(
-#         source="module.title",
-#         read_only=True
-#     )
-
-#     class Meta:
-#         model = Lesson
-#         fields = "__all__"   
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -103,14 +45,23 @@ class LessonSerializer(serializers.ModelSerializer):
             "order",
             "is_preview",
             "is_active",
-            "created_at",
-            "updated_at",
         ]
 
 
 class ModuleSerializer(serializers.ModelSerializer):
 
-    lessons = LessonSerializer(many=True, read_only=True)
+    # Frontend can continue sending:
+    # { "course_id": 1 }
+
+    course_id = serializers.PrimaryKeyRelatedField(
+        source="course",
+        queryset=Course.objects.all()
+    )
+
+    lessons = LessonSerializer(
+        many=True,
+        read_only=True
+    )
 
     class Meta:
         model = Module
