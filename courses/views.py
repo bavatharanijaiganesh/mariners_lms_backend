@@ -234,6 +234,11 @@ class LessonDetailView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
 
+        # ADMIN can access all lessons
+        if self.request.user.role == "ADMIN":
+            return Lesson.objects.all()
+
+        # STUDENT can access lessons only from paid courses
         return Lesson.objects.filter(
             module__course_id__in=Enrollment.objects.filter(
                 student=self.request.user,
